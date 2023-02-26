@@ -1,0 +1,13 @@
+variant: fcos
+version: 1.4.0
+passwd:
+  users:
+    - name: root
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKZOn1aphqE+kW1ICu+rewAyJNaL/pZb+NizhaQfoHkp root@lino
+storage:
+  files:
+    - path: "/etc/hostname"
+      overwrite: true
+      contents:
+        inline: "lino.wedg.dev"

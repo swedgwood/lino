@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: rclone-restic-proxy
+  name: rclone-restic-proxy
+spec:
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  hostname: rclone-restic-proxy
+  restartPolicy: OnFailure
+  volumes:
+  - name: rclone-config
+    hostPath:
+      path: "/home/core/rclone/rclone.conf"
+      type: File
+      readOnly: true
+  - name: rclone-htpasswd
+    hostPath:
+      path: "/home/core/rclone/htpasswd"
+      type: File
+      readOnly: true
+  containers:
+  - name: rclone-restic-proxy
+    image: docker.io/rclone/rclone:latest
+    args: ["serve", "restic", "--addr", "0.0.0.0:7378", "--htpasswd", "/config/rclone/htpasswd", "--private-repos", "-v", "backup:backups-wedg-dev"]
+    ports:
+    - containerPort: 7378
+      hostPort: 7378
+    securityContext:
+      seLinuxOptions:
+        type: spc_t
+    volumeMounts:
+    - mountPath: /config/rclone/rclone.conf
+      name: rclone-config
+    - mountPath: /config/rclone/htpasswd
+      name: rclone-htpasswd
+

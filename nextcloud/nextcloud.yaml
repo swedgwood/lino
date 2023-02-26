@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: nextcloud-pod
+  name: nextcloud-pod
+spec:
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  hostname: nextcloud-pod
+  restartPolicy: OnFailure
+  volumes:
+  - name: nextcloud-db-pvc
+    persistentVolumeClaim:
+      claimName: nextcloud-db
+  - name: nextcloud-app-pvc
+    persistentVolumeClaim:
+      claimName: nextcloud-app
+  - name: nextcloud-data-pvc
+    persistentVolumeClaim:
+      claimName: nextcloud-data
+  containers:
+  - name: nextcloud-db
+    image: docker.io/library/mariadb:latest
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: password
+    - name: MYSQL_DATABASE
+      value: nextcloud
+    - name: MYSQL_USER
+      value: nextcloud
+    - name: MYSQL_PASSWORD
+      value: password
+    volumeMounts:
+    - mountPath: /var/lib/mysql
+      name: nextcloud-db-pvc
+  - image: docker.io/library/nextcloud:latest
+    name: nextcloud
+    env:
+    - name: NEXTCLOUD_TRUSTED_DOMAINS
+      value: 46.101.19.201:8080
+    - name: NEXTCLOUD_ADMIN_USER
+      value: admin
+    - name: NEXTCLOUD_ADMIN_PASSWORD
+      value: password
+    - name: MYSQL_HOST
+      value: 127.0.0.1:3306
+    - name: MYSQL_DATABASE
+      value: nextcloud
+    - name: MYSQL_USER
+      value: nextcloud
+    - name: MYSQL_PASSWORD
+      value: password
+    ports:
+    - containerPort: 80
+      hostPort: 8080
+    volumeMounts:
+    - mountPath: /var/www/html
+      name: nextcloud-app-pvc
+    - mountPath: /var/www/html/data
+      name: nextcloud-data-pvc
+
